@@ -1,0 +1,32 @@
+services:
+  engine:
+    build: ../codebase-qa-agent
+    ports:
+      - "8080:8080"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - AGENTFIELD_CONTROL_PLANE_URL=http://localhost:8080
+    volumes:
+      - engine-data:/root/.codebase-qa-agent
+
+  backend:
+    build: ../codebase-qa-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - AGENT_BASE_URL=http://engine:8080
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      - engine
+
+  frontend:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  engine-data:

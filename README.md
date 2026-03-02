@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Codebase QA Frontend
 
-## Getting Started
+Next.js 15 web interface for the Codebase QA system. Paste a GitHub URL, ask questions about any codebase, and browse source code — all in one place.
 
-First, run the development server:
+## Features
+
+- **Three-panel layout** — File tree, chat, and code viewer side by side
+- **SSE streaming** — Real-time streamed answers from the LLM
+- **Syntax highlighting** — Server-side Shiki highlighting for 27+ languages
+- **Dark mode** — System-aware with manual toggle (next-themes)
+- **Follow-up suggestions** — AI-generated follow-up questions after each answer
+- **File references** — Click relevant files in chat to view their source code
+- **Responsive** — Mobile-friendly tabbed layout, desktop three-panel
+
+## Tech Stack
+
+- **Next.js 16** (App Router, React 19)
+- **Tailwind CSS v4** with CSS variables
+- **Shiki** for syntax highlighting (server-side API route)
+- **SWR** for data fetching and caching
+- **next-themes** for dark mode
+
+## Pages
+
+| Route | Description |
+|---|---|
+| `/` | Landing page — paste a GitHub URL to index |
+| `/dashboard` | View and manage indexed projects |
+| `/project/[id]` | Chat + file tree + code viewer |
+
+## Quick Start
 
 ```bash
+npm install
+cp .env.local.example .env.local  # Set NEXT_PUBLIC_API_URL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Default | Description |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend API URL |
 
-## Learn More
+## Docker
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker compose up
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Starts the full stack: engine (8080), backend (8000), frontend (3000).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+app/
+  page.tsx                    # Landing page
+  dashboard/page.tsx          # Project dashboard
+  project/[projectId]/page.tsx # Three-panel workspace
+  api/highlight/route.ts      # Shiki highlighting endpoint
+  error.tsx                   # Error boundary page
+  not-found.tsx               # 404 page
+components/
+  landing/UrlInputForm.tsx    # GitHub URL input
+  dashboard/ProjectGrid.tsx   # Project cards
+  chat/ChatPanel.tsx          # Chat with SSE streaming
+  explorer/FileTree.tsx       # Expandable file tree
+  explorer/CodeViewer.tsx     # Syntax-highlighted code
+  Navbar.tsx                  # Global navigation
+  ThemeToggle.tsx             # Dark/light mode switch
+  ErrorBoundary.tsx           # React error boundary
+lib/
+  api/                        # API client + fetchers
+  hooks/                      # SWR hooks
+  chat/                       # Session storage
+  explorer/                   # File tree builder, language detection
+types/
+  api.ts                      # TypeScript API types
+  tree.ts                     # File tree node type
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Related Repos
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [codebase-qa-agent](https://github.com/BharanidharanJayakumar/codebase-qa-agent) — RAG engine (Agentfield + Groq)
+- [codebase-qa-backend](https://github.com/BharanidharanJayakumar/codebase-qa-backend) — FastAPI proxy
