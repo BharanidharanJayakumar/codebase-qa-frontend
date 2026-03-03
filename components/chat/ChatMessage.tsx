@@ -1,13 +1,17 @@
 "use client";
 
+import type { ReactNode } from "react";
+import { MarkdownRenderer } from "./MarkdownRenderer";
+
 interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   relevantFiles?: string[];
   onFileClick?: (filePath: string) => void;
+  children?: ReactNode;
 }
 
-export function ChatMessage({ role, content, relevantFiles, onFileClick }: ChatMessageProps) {
+export function ChatMessage({ role, content, relevantFiles, onFileClick, children }: ChatMessageProps) {
   return (
     <div className={`flex gap-3 ${role === "user" ? "justify-end" : ""}`}>
       <div
@@ -17,7 +21,13 @@ export function ChatMessage({ role, content, relevantFiles, onFileClick }: ChatM
             : "bg-[var(--muted)]"
         }`}
       >
-        <div className="whitespace-pre-wrap">{content}</div>
+        {children || (
+          role === "assistant" && content ? (
+            <MarkdownRenderer content={content} />
+          ) : (
+            <div className="whitespace-pre-wrap">{content}</div>
+          )
+        )}
         {relevantFiles && relevantFiles.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {relevantFiles.map((file) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Copy, Check } from "lucide-react";
 import { useFileContent } from "@/lib/hooks/useFileContent";
 import { detectLanguage } from "@/lib/explorer/language-detector";
 
@@ -13,9 +14,11 @@ export function CodeViewer({ filePath, projectPath }: CodeViewerProps) {
   const { content, extension, isLoading, error } = useFileContent(filePath, projectPath);
   const [highlighted, setHighlighted] = useState<string>("");
   const [highlighting, setHighlighting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!content || !filePath) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset on content change
       setHighlighted("");
       return;
     }
@@ -47,6 +50,13 @@ export function CodeViewer({ filePath, projectPath }: CodeViewerProps) {
     };
   }, [content, filePath]);
 
+  const handleCopy = async () => {
+    if (!content) return;
+    await navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (!filePath) {
     return (
       <div className="flex h-full items-center justify-center text-[var(--muted-foreground)]">
@@ -60,11 +70,11 @@ export function CodeViewer({ filePath, projectPath }: CodeViewerProps) {
       <div className="p-4">
         <div className="mb-3 font-mono text-sm text-[var(--muted-foreground)]">{filePath}</div>
         <div className="space-y-2">
-          {Array.from({ length: 12 }).map((_, i) => (
+          {[85, 60, 75, 45, 90, 55, 70, 80, 50, 65, 88, 42].map((w, i) => (
             <div
               key={i}
               className="h-4 animate-pulse rounded bg-[var(--muted)]"
-              style={{ width: `${40 + Math.random() * 50}%` }}
+              style={{ width: `${w}%` }}
             />
           ))}
         </div>
@@ -86,11 +96,27 @@ export function CodeViewer({ filePath, projectPath }: CodeViewerProps) {
         <span className="font-mono text-sm text-[var(--muted-foreground)] truncate">
           {filePath}
         </span>
-        {extension && (
-          <span className="rounded bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
-            {extension}
-          </span>
-        )}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+            title="Copy to clipboard"
+          >
+            {copied ? (
+              <>
+                <Check size={14} />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <Copy size={14} />
+            )}
+          </button>
+          {extension && (
+            <span className="rounded bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
+              {extension}
+            </span>
+          )}
+        </div>
       </div>
       {highlighted ? (
         <div

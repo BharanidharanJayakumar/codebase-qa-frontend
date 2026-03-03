@@ -3,6 +3,7 @@
 import { useSearchParams, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
 import { qaApi } from "@/lib/api/qa";
 import { buildFileTree } from "@/lib/explorer/file-tree";
 import { FileTree } from "@/components/explorer/FileTree";
@@ -14,6 +15,12 @@ import type { FileTreeNode } from "@/types/tree";
 
 type ActivePanel = "chat" | "code";
 
+function ResizeHandle() {
+  return (
+    <PanelResizeHandle className="resize-handle" />
+  );
+}
+
 export default function ProjectPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -24,11 +31,11 @@ export default function ProjectPage() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loadingFiles, setLoadingFiles] = useState(true);
-  // For mobile: switch between chat and code panels
   const [activePanel, setActivePanel] = useState<ActivePanel>("chat");
 
   useEffect(() => {
     if (!projectPath) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch loading state
     setLoadingFiles(true);
     qaApi
       .findRelevantFiles("*", projectPath)
@@ -92,36 +99,64 @@ export default function ProjectPage() {
         </div>
       </header>
 
-      {/* Three-panel layout (desktop) / tabbed layout (mobile) */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* File Tree Panel — desktop only */}
-        {sidebarOpen && (
-          <aside className="hidden lg:block w-64 flex-shrink-0 overflow-y-auto border-r border-[var(--border)]">
-            <div className="p-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
-              Files
-            </div>
-            {loadingFiles ? (
-              <div className="space-y-1 p-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-6 animate-pulse rounded bg-[var(--muted)]"
-                    style={{ width: `${50 + Math.random() * 40}%`, marginLeft: `${(i % 3) * 16}px` }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <FileTree
-                nodes={files}
-                onSelect={handleFileSelect}
-                selectedFile={selectedFile || undefined}
-              />
-            )}
-          </aside>
-        )}
+      {/* Desktop: Resizable three-panel layout */}
+      <div className="hidden lg:flex flex-1 overflow-hidden">
+        <PanelGroup orientation="horizontal">
+          {sidebarOpen && (
+            <>
+              <Panel defaultSize={20} minSize={15} maxSize={35}>
+                <aside className="h-full overflow-y-auto border-r border-[var(--border)]">
+                  <div className="p-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+                    Files
+                  </div>
+                  {loadingFiles ? (
+                    <div className="space-y-1 p-2">
+                      {[70, 55, 80, 60, 75, 50, 85, 65].map((w, i) => (
+                        <div
+                          key={i}
+                          className="h-6 animate-pulse rounded bg-[var(--muted)]"
+                          style={{ width: `${w}%`, marginLeft: `${(i % 3) * 16}px` }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <FileTree
+                      nodes={files}
+                      onSelect={handleFileSelect}
+                      selectedFile={selectedFile || undefined}
+                    />
+                  )}
+                </aside>
+              </Panel>
+              <ResizeHandle />
+            </>
+          )}
 
-        {/* Chat Panel */}
-        <div className={`flex-1 border-r border-[var(--border)] ${activePanel !== "chat" ? "hidden lg:flex lg:flex-col" : "flex flex-col"}`}>
+          <Panel defaultSize={sidebarOpen ? 40 : 50} minSize={25}>
+            <div className="h-full flex flex-col border-r border-[var(--border)]">
+              <ErrorBoundary>
+                <ChatPanel
+                  projectPath={projectPath}
+                  projectId={projectId}
+                  onFileClick={handleFileSelect}
+                />
+              </ErrorBoundary>
+            </div>
+          </Panel>
+
+          <ResizeHandle />
+
+          <Panel defaultSize={sidebarOpen ? 40 : 50} minSize={25}>
+            <ErrorBoundary>
+              <CodeViewer filePath={selectedFile} projectPath={projectPath} />
+            </ErrorBoundary>
+          </Panel>
+        </PanelGroup>
+      </div>
+
+      {/* Mobile: Tabbed layout */}
+      <div className="flex lg:hidden flex-1 overflow-hidden">
+        <div className={`flex-1 flex flex-col ${activePanel !== "chat" ? "hidden" : ""}`}>
           <ErrorBoundary>
             <ChatPanel
               projectPath={projectPath}
@@ -130,9 +165,7 @@ export default function ProjectPage() {
             />
           </ErrorBoundary>
         </div>
-
-        {/* Code Viewer Panel */}
-        <div className={`flex-1 ${activePanel !== "code" ? "hidden lg:block" : ""}`}>
+        <div className={`flex-1 ${activePanel !== "code" ? "hidden" : ""}`}>
           <ErrorBoundary>
             <CodeViewer filePath={selectedFile} projectPath={projectPath} />
           </ErrorBoundary>

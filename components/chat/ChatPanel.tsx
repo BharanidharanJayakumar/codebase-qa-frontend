@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { qaApi } from "@/lib/api/qa";
 import { getSessionId, setSessionId, generateSessionId } from "@/lib/chat/session-store";
 import { ChatMessage } from "./ChatMessage";
+import { TypingIndicator } from "./TypingIndicator";
 import type { AnswerDoneEvent } from "@/types/api";
 
 interface Message {
@@ -135,7 +136,11 @@ export function ChatPanel({ projectPath, projectId, onFileClick }: ChatPanelProp
             content={msg.content}
             relevantFiles={msg.relevantFiles}
             onFileClick={onFileClick}
-          />
+          >
+            {msg.role === "assistant" && streaming && !msg.content && (
+              <TypingIndicator />
+            )}
+          </ChatMessage>
         ))}
         <div ref={bottomRef} />
       </div>

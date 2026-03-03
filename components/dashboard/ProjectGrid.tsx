@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useProjects } from "@/lib/hooks/useProjects";
 import { indexerApi } from "@/lib/api/indexer";
 import { ProjectCard } from "./ProjectCard";
@@ -48,7 +49,7 @@ export function ProjectGrid() {
       <div className="text-center py-12 text-[var(--muted-foreground)]">
         <p className="text-lg mb-2">No projects indexed yet</p>
         <p className="text-sm">
-          Go to the <a href="/" className="underline hover:text-[var(--foreground)]">home page</a> to index a GitHub repository.
+          Go to the <Link href="/" className="underline hover:text-[var(--foreground)]">home page</Link> to index a GitHub repository.
         </p>
       </div>
     );
