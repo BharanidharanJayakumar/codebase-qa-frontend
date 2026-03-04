@@ -31,6 +31,7 @@ export default function ProjectPage() {
 
   useEffect(() => {
     if (!projectPath) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch loading state
     setLoadingFiles(true);
     qaApi
       .listProjectFiles(projectPath)
