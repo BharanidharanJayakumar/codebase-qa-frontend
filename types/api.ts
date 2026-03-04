@@ -61,3 +61,32 @@ export interface FindRelevantFilesResponse {
   confidence: string;
   reasoning: string;
 }
+
+export interface ProjectFile {
+  relative_path: string;
+  extension: string;
+  size_bytes: number;
+}
+
+export interface ListProjectFilesResponse {
+  files: ProjectFile[];
+  total: number;
+}
+
+export interface SessionTurn {
+  question: string;
+  answer: string;
+  relevant_files: string[];
+}
+
+export interface LoadSessionResponse {
+  turns: SessionTurn[];
+  session_id: string;
+}
+
+export interface IndexLocalResponse {
+  files_indexed: number;
+  project_root: string;
+  indexed_at: number;
+  message: string;
+}

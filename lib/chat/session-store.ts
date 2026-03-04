@@ -1,17 +1,17 @@
 /**
- * Per-tab session ID management using sessionStorage.
- * Each browser tab gets independent conversations.
+ * Persistent session ID management using localStorage.
+ * Sessions survive across tabs and browser restarts so chat history is preserved.
  */
 const PREFIX = "cqa-session-";
 
 export function getSessionId(projectId: string): string | undefined {
   if (typeof window === "undefined") return undefined;
-  return sessionStorage.getItem(`${PREFIX}${projectId}`) || undefined;
+  return localStorage.getItem(`${PREFIX}${projectId}`) || undefined;
 }
 
 export function setSessionId(projectId: string, sessionId: string): void {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(`${PREFIX}${projectId}`, sessionId);
+  localStorage.setItem(`${PREFIX}${projectId}`, sessionId);
 }
 
 export function generateSessionId(): string {

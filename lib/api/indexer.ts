@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import type { CloneAndIndexResponse, DeleteProjectResponse } from "@/types/api";
+import type { CloneAndIndexResponse, DeleteProjectResponse, IndexLocalResponse } from "@/types/api";
 
 export const indexerApi = {
   cloneAndIndex: (githubUrl: string) =>
@@ -12,5 +12,11 @@ export const indexerApi = {
     apiFetch<DeleteProjectResponse>("/api/indexer/project", {
       method: "DELETE",
       body: JSON.stringify({ project_identifier: projectIdentifier }),
+    }),
+
+  indexLocal: (projectPath: string) =>
+    apiFetch<IndexLocalResponse>("/api/indexer/index", {
+      method: "POST",
+      body: JSON.stringify({ project_path: projectPath }),
     }),
 };

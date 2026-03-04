@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { qaApi } from "@/lib/api/qa";
 import { getSessionId, setSessionId, generateSessionId } from "@/lib/chat/session-store";
 import { ChatMessage } from "./ChatMessage";
@@ -21,12 +21,24 @@ interface ChatPanelProps {
   onFileClick?: (filePath: string) => void;
 }
 
-export function ChatPanel({ projectPath, projectId, onFileClick }: ChatPanelProps) {
+export interface ChatPanelHandle {
+  setInput: (text: string) => void;
+}
+
+export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function ChatPanel({ projectPath, projectId, onFileClick }, ref) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    setInput: (text: string) => {
+      setInput(text);
+      inputRef.current?.focus();
+    },
+  }));
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,6 +47,48 @@ export function ChatPanel({ projectPath, projectId, onFileClick }: ChatPanelProp
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Load previous conversation history on mount
+  useEffect(() => {
+    const sid = getSessionId(projectId);
+    if (!sid) {
+      console.log("[ChatPanel] No session ID found for project:", projectId);
+      return;
+    }
+
+    console.log("[ChatPanel] Loading session history for:", sid);
+    let cancelled = false;
+    setLoadingHistory(true);
+
+    qaApi.loadSession(sid).then((data) => {
+      console.log("[ChatPanel] Session data received:", JSON.stringify(data).slice(0, 200));
+      if (cancelled || !data.turns?.length) {
+        setLoadingHistory(false);
+        return;
+      }
+      const restored: Message[] = [];
+      data.turns.forEach((turn, i) => {
+        restored.push({
+          id: `h-u-${i}`,
+          role: "user",
+          content: turn.question,
+        });
+        restored.push({
+          id: `h-a-${i}`,
+          role: "assistant",
+          content: turn.answer,
+          relevantFiles: turn.relevant_files,
+        });
+      });
+      setMessages(restored);
+      setLoadingHistory(false);
+    }).catch((err) => {
+      console.error("[ChatPanel] Failed to load session:", err);
+      setLoadingHistory(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   const getOrCreateSession = () => {
     let sid = getSessionId(projectId);
@@ -124,7 +178,12 @@ export function ChatPanel({ projectPath, projectId, onFileClick }: ChatPanelProp
     <div className="flex h-full flex-col">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && (
+        {loadingHistory && (
+          <div className="flex h-full items-center justify-center text-[var(--muted-foreground)]">
+            <p>Loading conversation history...</p>
+          </div>
+        )}
+        {!loadingHistory && messages.length === 0 && (
           <div className="flex h-full items-center justify-center text-[var(--muted-foreground)]">
             <p>Ask a question about this codebase</p>
           </div>
@@ -184,4 +243,4 @@ export function ChatPanel({ projectPath, projectId, onFileClick }: ChatPanelProp
       </form>
     </div>
   );
-}
+});

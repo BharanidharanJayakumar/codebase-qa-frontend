@@ -3,6 +3,8 @@ import type {
   ListProjectsResponse,
   GetFileContentResponse,
   FindRelevantFilesResponse,
+  ListProjectFilesResponse,
+  LoadSessionResponse,
   SSEEvent,
 } from "@/types/api";
 
@@ -20,6 +22,15 @@ export const qaApi = {
       method: "POST",
       body: JSON.stringify({ query, project_path: projectPath }),
     }),
+
+  listProjectFiles: (projectPath: string) =>
+    apiFetch<ListProjectFilesResponse>("/api/qa/project-files", {
+      method: "POST",
+      body: JSON.stringify({ project_path: projectPath }),
+    }),
+
+  loadSession: (sessionId: string) =>
+    apiFetch<LoadSessionResponse>(`/api/qa/sessions/${sessionId}`),
 
   async *answerQuestion(
     question: string,

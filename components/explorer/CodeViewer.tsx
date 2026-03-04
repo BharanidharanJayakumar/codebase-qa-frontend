@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, MessageCircle } from "lucide-react";
 import { useFileContent } from "@/lib/hooks/useFileContent";
 import { detectLanguage } from "@/lib/explorer/language-detector";
 
 interface CodeViewerProps {
   filePath: string | null;
   projectPath?: string;
+  onAskAboutFile?: (filePath: string) => void;
 }
 
-export function CodeViewer({ filePath, projectPath }: CodeViewerProps) {
+export function CodeViewer({ filePath, projectPath, onAskAboutFile }: CodeViewerProps) {
   const { content, extension, isLoading, error } = useFileContent(filePath, projectPath);
   const [highlighted, setHighlighted] = useState<string>("");
   const [highlighting, setHighlighting] = useState(false);
@@ -97,6 +98,16 @@ export function CodeViewer({ filePath, projectPath }: CodeViewerProps) {
           {filePath}
         </span>
         <div className="flex items-center gap-2 flex-shrink-0">
+          {onAskAboutFile && (
+            <button
+              onClick={() => onAskAboutFile(filePath!)}
+              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+              title="Ask about this file"
+            >
+              <MessageCircle size={14} />
+              <span>Ask</span>
+            </button>
+          )}
           <button
             onClick={handleCopy}
             className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
