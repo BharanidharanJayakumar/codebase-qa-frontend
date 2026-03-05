@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { UrlInputForm } from "@/components/landing/UrlInputForm";
 
 const features = [
@@ -17,6 +20,8 @@ const features = [
 ];
 
 export default function Home() {
+  const { user } = useAuth();
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center px-4">
       {/* Subtle gradient backdrop */}
@@ -41,12 +46,21 @@ export default function Home() {
         <UrlInputForm />
 
         <div className="flex gap-6 text-sm text-[var(--muted-foreground)]">
-          <Link
-            href="/dashboard"
-            className="underline underline-offset-4 hover:text-[var(--foreground)]"
-          >
-            View Dashboard
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="underline underline-offset-4 hover:text-[var(--foreground)]"
+            >
+              View Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="underline underline-offset-4 hover:text-[var(--foreground)]"
+            >
+              Sign in to view your projects
+            </Link>
+          )}
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 text-left">

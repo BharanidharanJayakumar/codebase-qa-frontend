@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { indexerApi } from "@/lib/api/indexer";
 
 type IndexMode = "github" | "local";
@@ -13,9 +14,16 @@ export function UrlInputForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Redirect to login if not authenticated
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
     if (mode === "github" && !url.trim()) return;
     if (mode === "local" && !localPath.trim()) return;
@@ -94,7 +102,7 @@ export function UrlInputForm() {
           disabled={loading || (mode === "github" ? !url.trim() : !localPath.trim())}
           className="rounded-lg bg-[var(--primary)] px-6 py-3 font-medium text-[var(--primary-foreground)] transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {loading ? "Indexing..." : "Index"}
+          {loading ? "Indexing..." : user ? "Index" : "Sign in to Index"}
         </button>
       </div>
 
