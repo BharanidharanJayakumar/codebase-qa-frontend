@@ -38,9 +38,22 @@ export function Navbar() {
               {user.is_anonymous ? (
                 <span className="text-xs text-[var(--muted-foreground)]">Guest</span>
               ) : (
-                <span className="text-xs text-[var(--muted-foreground)] truncate max-w-[150px]">
-                  {user.user_metadata?.full_name || user.email || "User"}
-                </span>
+                <div className="flex items-center gap-2">
+                  {user.user_metadata?.avatar_url ? (
+                    <img
+                      src={user.user_metadata.avatar_url}
+                      alt=""
+                      className="h-6 w-6 rounded-full"
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--muted)] text-xs font-medium">
+                      {(user.user_metadata?.full_name || user.email || "U").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-xs text-[var(--muted-foreground)] truncate max-w-[150px]">
+                    {user.user_metadata?.full_name || user.email || "User"}
+                  </span>
+                </div>
               )}
               <button
                 onClick={() => signOut()}
