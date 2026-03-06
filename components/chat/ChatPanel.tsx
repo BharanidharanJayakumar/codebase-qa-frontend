@@ -99,6 +99,12 @@ export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function Ch
     return sid;
   };
 
+  const startNewChat = () => {
+    const newSid = generateSessionId();
+    setSessionId(projectId, newSid);
+    setMessages([]);
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || streaming) return;
 
@@ -176,6 +182,18 @@ export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function Ch
 
   return (
     <div className="flex h-full flex-col">
+      {/* Chat header with New Chat button */}
+      {messages.length > 0 && (
+        <div className="flex items-center justify-end border-b border-[var(--border)] px-3 py-1.5">
+          <button
+            onClick={startNewChat}
+            disabled={streaming}
+            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors disabled:opacity-50"
+          >
+            + New Chat
+          </button>
+        </div>
+      )}
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {loadingHistory && (
