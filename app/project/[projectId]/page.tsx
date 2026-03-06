@@ -1,8 +1,9 @@
 "use client";
 
-import { useSearchParams, useParams } from "next/navigation";
+import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { qaApi } from "@/lib/api/qa";
 import { buildFileTree } from "@/lib/explorer/file-tree";
 import { FileTree } from "@/components/explorer/FileTree";
@@ -18,6 +19,8 @@ type MobileTab = "explorer" | "editor" | "chat";
 export default function ProjectPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const projectId = params.projectId as string;
   const projectPath = searchParams.get("path") || "";
 
@@ -28,6 +31,13 @@ export default function ProjectPage() {
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [mobileTab, setMobileTab] = useState<MobileTab>("explorer");
   const chatInputRef = useRef<ChatPanelHandle>(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (!projectPath) return;
@@ -55,6 +65,14 @@ export default function ProjectPage() {
     setMobileTab("chat");
     chatInputRef.current?.setInput(`Explain the file ${filePath}`);
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col">
