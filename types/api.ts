@@ -90,3 +90,24 @@ export interface IndexLocalResponse {
   indexed_at: number;
   message: string;
 }
+
+export interface ChatSession {
+  id: string;
+  project_id: string;
+  created_at: string;
+  last_message_at: string;
+}
+
+export interface ListSessionsResponse {
+  sessions: ChatSession[];
+}
+
+export interface SupabaseProject {
+  id: string;
+  slug: string;
+  project_root: string;
+  github_url: string | null;
+  total_files: number;
+  indexed_at: string;
+  last_accessed_at: string;
+}

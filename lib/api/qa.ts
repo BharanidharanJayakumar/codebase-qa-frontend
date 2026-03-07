@@ -5,6 +5,7 @@ import type {
   FindRelevantFilesResponse,
   ListProjectFilesResponse,
   LoadSessionResponse,
+  ListSessionsResponse,
   SSEEvent,
 } from "@/types/api";
 
@@ -32,13 +33,15 @@ export const qaApi = {
   loadSession: (sessionId: string) =>
     apiFetch<LoadSessionResponse>(`/api/qa/sessions/${sessionId}`),
 
+  listUserSessions: (projectId: string) =>
+    apiFetch<ListSessionsResponse>(`/api/qa/user/sessions?project_id=${projectId}`),
+
   async *answerQuestion(
     question: string,
     sessionId?: string,
     projectPath?: string,
   ): AsyncGenerator<SSEEvent> {
-    const url = apiStreamUrl("/api/qa/answer");
-    const res = await apiFetchWithAuth(url, {
+    const res = await apiFetchWithAuth("/api/qa/answer", {
       method: "POST",
       body: JSON.stringify({
         question,
