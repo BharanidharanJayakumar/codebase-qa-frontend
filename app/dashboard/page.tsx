@@ -31,10 +31,19 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-5xl">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl font-bold">
+              {user.is_anonymous
+                ? "Guest Dashboard"
+                : `Welcome, ${user.user_metadata?.full_name?.split(" ")[0] || "there"}`}
+            </h1>
             <p className="text-[var(--muted-foreground)] mt-1">
               Your indexed repositories
             </p>
+            {user.is_anonymous && (
+              <p className="text-xs text-amber-500 mt-1">
+                Guest accounts are limited. Sign in to save your projects permanently.
+              </p>
+            )}
           </div>
           <Link
             href="/"
