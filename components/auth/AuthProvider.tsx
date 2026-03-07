@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
@@ -20,9 +20,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
@@ -38,29 +43,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const signInWithGoogle = useCallback(async () => {
-    await supabase.auth.signInWithOAuth({
+    await supabase?.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/dashboard` },
     });
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const signInWithGitHub = useCallback(async () => {
-    await supabase.auth.signInWithOAuth({
+    await supabase?.auth.signInWithOAuth({
       provider: "github",
       options: { redirectTo: `${window.location.origin}/dashboard` },
     });
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const signInAsGuest = useCallback(async () => {
-    await supabase.auth.signInAnonymously();
-  }, [supabase.auth]);
+    await supabase?.auth.signInAnonymously();
+  }, [supabase]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, [supabase.auth]);
+    await supabase?.auth.signOut();
+  }, [supabase]);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signInWithGitHub, signInAsGuest, signOut }}>
