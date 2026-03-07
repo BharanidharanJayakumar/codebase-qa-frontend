@@ -1,4 +1,4 @@
-import { apiFetch, apiStreamUrl } from "./client";
+import { apiFetch, apiFetchWithAuth, apiStreamUrl } from "./client";
 import type {
   ListProjectsResponse,
   GetFileContentResponse,
@@ -38,9 +38,8 @@ export const qaApi = {
     projectPath?: string,
   ): AsyncGenerator<SSEEvent> {
     const url = apiStreamUrl("/api/qa/answer");
-    const res = await fetch(url, {
+    const res = await apiFetchWithAuth(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         question,
         session_id: sessionId || undefined,

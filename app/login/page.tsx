@@ -1,6 +1,9 @@
 "use client";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+
+export const dynamic = "force-dynamic";
+
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
