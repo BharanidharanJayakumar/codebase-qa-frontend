@@ -13,6 +13,7 @@ export function UrlInputForm() {
   const [localPath, setLocalPath] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [progress, setProgress] = useState("");
   const router = useRouter();
   const { user } = useAuth();
 
@@ -30,14 +31,19 @@ export function UrlInputForm() {
 
     setLoading(true);
     setError("");
+    setProgress(mode === "github" ? "Cloning repository..." : "Scanning files...");
 
     try {
       if (mode === "github") {
+        setProgress("Cloning repository...");
         const result = await indexerApi.cloneAndIndex(url.trim());
+        setProgress("Indexing complete!");
         const slug = result.owner_repo.replace("/", "-");
         router.push(`/project/${slug}?path=${encodeURIComponent(result.project_root)}`);
       } else {
+        setProgress("Indexing local folder...");
         const result = await indexerApi.indexLocal(localPath.trim());
+        setProgress("Indexing complete!");
         const name = localPath.trim().split("/").filter(Boolean).pop() || "project";
         router.push(`/project/${name}?path=${encodeURIComponent(result.project_root)}`);
       }
@@ -45,6 +51,7 @@ export function UrlInputForm() {
       setError(err instanceof Error ? err.message : "Failed to index");
     } finally {
       setLoading(false);
+      setProgress("");
     }
   };
 
@@ -112,9 +119,12 @@ export function UrlInputForm() {
         </p>
       )}
       {loading && (
-        <p className="text-sm text-[var(--muted-foreground)]">
-          {mode === "github" ? "Cloning and indexing repository" : "Indexing local folder"} — this may take a moment...
-        </p>
+        <div className="flex items-center gap-3">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+          <p className="text-sm text-[var(--muted-foreground)]">
+            {progress || "Processing..."}
+          </p>
+        </div>
       )}
       {error && (
         <p className="text-sm text-[var(--destructive)]">{error}</p>
