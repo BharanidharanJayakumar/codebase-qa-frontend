@@ -122,6 +122,11 @@ export function CodeViewer({ filePath, projectPath, onAskAboutFile }: CodeViewer
               <Copy size={14} />
             )}
           </button>
+          {content && (
+            <span className="text-xs text-[var(--muted-foreground)]">
+              {content.split("\n").length} lines
+            </span>
+          )}
           {extension && (
             <span className="rounded bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
               {extension}
