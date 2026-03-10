@@ -52,11 +52,22 @@ export function ProjectGrid() {
 
   if (projects.length === 0) {
     return (
-      <div className="text-center py-12 text-[var(--muted-foreground)]">
-        <p className="text-lg mb-2">No projects indexed yet</p>
-        <p className="text-sm">
-          Go to the <Link href="/" className="underline hover:text-[var(--foreground)]">home page</Link> to index a GitHub repository.
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--muted)]">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--muted-foreground)]">
+            <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+        </div>
+        <p className="text-lg font-medium mb-2">No projects indexed yet</p>
+        <p className="text-sm text-[var(--muted-foreground)] mb-6 max-w-xs">
+          Index a GitHub repository to start asking questions about its codebase.
         </p>
+        <Link
+          href="/"
+          className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-[var(--primary-foreground)] transition-opacity hover:opacity-90"
+        >
+          Index Your First Repo
+        </Link>
       </div>
     );
   }
