@@ -17,7 +17,8 @@ export interface CloneAndIndexResponse {
   indexed_at: number;
   message: string;
   github_url: string;
-  owner_repo: string;
+  owner_repo?: string;
+  slug: string;
   clone_action: string;
 }
 
@@ -94,6 +95,7 @@ export interface IndexLocalResponse {
 export interface ChatSession {
   id: string;
   project_id: string;
+  title: string | null;
   created_at: string;
   last_message_at: string;
 }

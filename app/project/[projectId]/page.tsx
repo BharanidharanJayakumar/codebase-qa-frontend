@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { qaApi } from "@/lib/api/qa";
@@ -10,6 +10,8 @@ import { FileTree } from "@/components/explorer/FileTree";
 import { CodeViewer } from "@/components/explorer/CodeViewer";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import type { ChatPanelHandle } from "@/components/chat/ChatPanel";
+import { SessionSidebar } from "@/components/chat/SessionSidebar";
+import { getSessionId, setSessionId, generateSessionId } from "@/lib/chat/session-store";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import type { FileTreeNode } from "@/types/tree";
@@ -28,8 +30,11 @@ export default function ProjectPage() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatOpen, setChatOpen] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [mobileTab, setMobileTab] = useState<MobileTab>("explorer");
+  const [activeSessionId, setActiveSessionId] = useState<string | undefined>(() => getSessionId(projectId));
+  const [sessionRefreshKey, setSessionRefreshKey] = useState(0);
   const chatInputRef = useRef<ChatPanelHandle>(null);
 
   // Redirect to login if not authenticated
@@ -65,6 +70,21 @@ export default function ProjectPage() {
     setMobileTab("chat");
     chatInputRef.current?.setInput(`Explain the file ${filePath}`);
   };
+
+  const handleNewChat = useCallback(() => {
+    const newSid = generateSessionId();
+    setSessionId(projectId, newSid);
+    setActiveSessionId(newSid);
+  }, [projectId]);
+
+  const handleSelectSession = useCallback((sessionId: string) => {
+    setSessionId(projectId, sessionId);
+    setActiveSessionId(sessionId);
+  }, [projectId]);
+
+  const handleSessionCreated = useCallback(() => {
+    setSessionRefreshKey((k) => k + 1);
+  }, []);
 
   if (authLoading || !user) {
     return (
@@ -113,6 +133,20 @@ export default function ProjectPage() {
               <path d="M7 2v14" />
             </svg>
             <span>Explorer</span>
+          </button>
+          {/* Desktop: toggle chat history */}
+          <button
+            onClick={() => setHistoryOpen(!historyOpen)}
+            className={`hidden lg:flex items-center gap-1 rounded px-2 py-1.5 text-xs transition-colors ${
+              historyOpen ? "bg-[var(--muted)] text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
+            }`}
+            title={historyOpen ? "Hide history" : "Show history"}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="8" cy="8" r="6" />
+              <path d="M8 5v3l2 2" />
+            </svg>
+            <span>History</span>
           </button>
           {/* Desktop: toggle chat panel */}
           <button
@@ -172,6 +206,19 @@ export default function ProjectPage() {
           </ErrorBoundary>
         </main>
 
+        {/* Session history sidebar */}
+        {historyOpen && (
+          <aside className="w-56 shrink-0 border-l border-[var(--border)] bg-[var(--background)]">
+            <SessionSidebar
+              projectId={projectId}
+              activeSessionId={activeSessionId}
+              onSelectSession={handleSelectSession}
+              onNewChat={handleNewChat}
+              refreshKey={sessionRefreshKey}
+            />
+          </aside>
+        )}
+
         {/* Chat panel */}
         {chatOpen && (
           <div className="w-96 shrink-0 flex flex-col border-l border-[var(--border)]">
@@ -180,7 +227,9 @@ export default function ProjectPage() {
                 ref={chatInputRef}
                 projectPath={projectPath}
                 projectId={projectId}
+                sessionId={activeSessionId}
                 onFileClick={handleFileSelect}
+                onSessionCreated={handleSessionCreated}
               />
             </ErrorBoundary>
           </div>
@@ -228,7 +277,9 @@ export default function ProjectPage() {
               ref={chatInputRef}
               projectPath={projectPath}
               projectId={projectId}
+              sessionId={activeSessionId}
               onFileClick={handleFileSelect}
+              onSessionCreated={handleSessionCreated}
             />
           </ErrorBoundary>
         </div>

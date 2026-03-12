@@ -33,8 +33,11 @@ export const qaApi = {
   loadSession: (sessionId: string) =>
     apiFetch<LoadSessionResponse>(`/api/qa/sessions/${sessionId}`),
 
-  listUserSessions: (projectId: string) =>
-    apiFetch<ListSessionsResponse>(`/api/qa/user/sessions?project_id=${projectId}`),
+  listUserSessions: (slug: string) =>
+    apiFetch<ListSessionsResponse>(`/api/qa/user/sessions?slug=${encodeURIComponent(slug)}`),
+
+  deleteSession: (sessionId: string) =>
+    apiFetch<{ deleted: boolean }>(`/api/qa/sessions/${sessionId}`, { method: "DELETE" }),
 
   async *answerQuestion(
     question: string,

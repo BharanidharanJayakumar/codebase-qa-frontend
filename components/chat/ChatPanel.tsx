@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { qaApi } from "@/lib/api/qa";
-import { getSessionId, setSessionId, generateSessionId } from "@/lib/chat/session-store";
+import { setSessionId, generateSessionId } from "@/lib/chat/session-store";
 import { ChatMessage } from "./ChatMessage";
 import { TypingIndicator } from "./TypingIndicator";
 import type { AnswerDoneEvent } from "@/types/api";
@@ -18,14 +18,16 @@ interface Message {
 interface ChatPanelProps {
   projectPath: string;
   projectId: string;
+  sessionId: string | undefined;
   onFileClick?: (filePath: string) => void;
+  onSessionCreated?: () => void;
 }
 
 export interface ChatPanelHandle {
   setInput: (text: string) => void;
 }
 
-export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function ChatPanel({ projectPath, projectId, onFileClick }, ref) {
+export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function ChatPanel({ projectPath, projectId, sessionId: controlledSessionId, onFileClick, onSessionCreated }, ref) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -48,22 +50,20 @@ export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function Ch
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Load previous conversation history on mount
+  // Load conversation history when session changes
   useEffect(() => {
-    const sid = getSessionId(projectId);
-    if (!sid) {
-      console.log("[ChatPanel] No session ID found for project:", projectId);
+    if (!controlledSessionId) {
+      setMessages([]);
       return;
     }
 
-    console.log("[ChatPanel] Loading session history for:", sid);
     let cancelled = false;
     setLoadingHistory(true);
 
-    qaApi.loadSession(sid).then((data) => {
-      console.log("[ChatPanel] Session data received:", JSON.stringify(data).slice(0, 200));
+    qaApi.loadSession(controlledSessionId).then((data) => {
       if (cancelled || !data.turns?.length) {
         setLoadingHistory(false);
+        if (!cancelled) setMessages([]);
         return;
       }
       const restored: Message[] = [];
@@ -82,27 +82,21 @@ export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function Ch
       });
       setMessages(restored);
       setLoadingHistory(false);
-    }).catch((err) => {
-      console.error("[ChatPanel] Failed to load session:", err);
-      setLoadingHistory(false);
+    }).catch(() => {
+      if (!cancelled) {
+        setMessages([]);
+        setLoadingHistory(false);
+      }
     });
 
     return () => { cancelled = true; };
-  }, [projectId]);
+  }, [controlledSessionId]);
 
   const getOrCreateSession = () => {
-    let sid = getSessionId(projectId);
-    if (!sid) {
-      sid = generateSessionId();
-      setSessionId(projectId, sid);
-    }
+    if (controlledSessionId) return controlledSessionId;
+    const sid = generateSessionId();
+    setSessionId(projectId, sid);
     return sid;
-  };
-
-  const startNewChat = () => {
-    const newSid = generateSessionId();
-    setSessionId(projectId, newSid);
-    setMessages([]);
   };
 
   const sendMessage = async (text: string) => {
@@ -162,6 +156,7 @@ export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function Ch
       );
     } finally {
       setStreaming(false);
+      onSessionCreated?.();
     }
   };
 
@@ -182,18 +177,6 @@ export const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(function Ch
 
   return (
     <div className="flex h-full flex-col">
-      {/* Chat header with New Chat button */}
-      {messages.length > 0 && (
-        <div className="flex items-center justify-end border-b border-[var(--border)] px-3 py-1.5">
-          <button
-            onClick={startNewChat}
-            disabled={streaming}
-            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors disabled:opacity-50"
-          >
-            + New Chat
-          </button>
-        </div>
-      )}
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {loadingHistory && (
