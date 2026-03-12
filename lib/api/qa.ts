@@ -7,6 +7,10 @@ import type {
   LoadSessionResponse,
   ListSessionsResponse,
   SSEEvent,
+  ProjectSummaryResponse,
+  ProjectCategoriesResponse,
+  ProjectImportsResponse,
+  SearchCodeResponse,
 } from "@/types/api";
 
 export const qaApi = {
@@ -38,6 +42,30 @@ export const qaApi = {
 
   deleteSession: (sessionId: string) =>
     apiFetch<{ deleted: boolean }>(`/api/qa/sessions/${sessionId}`, { method: "DELETE" }),
+
+  getProjectSummary: (projectPath: string) =>
+    apiFetch<ProjectSummaryResponse>("/api/qa/project-summary", {
+      method: "POST",
+      body: JSON.stringify({ project_path: projectPath }),
+    }),
+
+  getProjectCategories: (projectPath: string, category?: string) =>
+    apiFetch<ProjectCategoriesResponse>("/api/qa/project-categories", {
+      method: "POST",
+      body: JSON.stringify({ project_path: projectPath, category }),
+    }),
+
+  getProjectImports: (projectPath: string, filePath?: string) =>
+    apiFetch<ProjectImportsResponse>("/api/qa/project-imports", {
+      method: "POST",
+      body: JSON.stringify({ project_path: projectPath, file_path: filePath }),
+    }),
+
+  searchCode: (query: string, projectPath?: string) =>
+    apiFetch<SearchCodeResponse>("/api/qa/search-code", {
+      method: "POST",
+      body: JSON.stringify({ query, project_path: projectPath }),
+    }),
 
   async *answerQuestion(
     question: string,

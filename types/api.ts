@@ -113,3 +113,59 @@ export interface SupabaseProject {
   indexed_at: string;
   last_accessed_at: string;
 }
+
+export interface ProjectSummary {
+  languages?: Record<string, number>;
+  total_lines?: number;
+  directory_tree?: Record<string, { files: number; subdirs: Record<string, number> }>;
+  total_symbols?: Record<string, number>;
+  readme_content?: string;
+  project_description?: string;
+  dependency_files?: string[];
+  framework_hints?: string[];
+}
+
+export interface ProjectSummaryResponse {
+  status: string;
+  summary: ProjectSummary;
+}
+
+export interface SymbolCategoryItem {
+  file: string;
+  symbol: string;
+  detail: string;
+}
+
+export interface ProjectCategoriesResponse {
+  status: string;
+  filter: string | null;
+  categories: Record<string, SymbolCategoryItem[]>;
+  total: number;
+}
+
+export interface ImportItem {
+  source: string;
+  imported: string;
+  target: string | null;
+  internal: boolean;
+}
+
+export interface ProjectImportsResponse {
+  status: string;
+  imports: ImportItem[];
+  internal_count: number;
+  external_count: number;
+  total: number;
+}
+
+export interface SearchCodeMatch {
+  file: string;
+  line: number;
+  text: string;
+}
+
+export interface SearchCodeResponse {
+  matches: SearchCodeMatch[];
+  total: number;
+  truncated?: boolean;
+}

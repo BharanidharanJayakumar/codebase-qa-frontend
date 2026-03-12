@@ -63,6 +63,17 @@ export function Navbar() {
               </button>
             </div>
           )}
+          {/* Cmd+K hint */}
+          <button
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
+            }}
+            className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
+          >
+            <kbd className="font-sans">Cmd</kbd>
+            <span>+</span>
+            <kbd className="font-sans">K</kbd>
+          </button>
           <ThemeToggle />
         </div>
       </div>
