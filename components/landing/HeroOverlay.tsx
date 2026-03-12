@@ -7,9 +7,9 @@ import { UrlInputForm } from "./UrlInputForm";
 import { Typewriter } from "./Typewriter";
 
 const stats = [
-  { label: "Languages", value: "14+" },
-  { label: "Frameworks", value: "30+" },
-  { label: "Agents", value: "4" },
+  { label: "Languages", value: "14+", icon: "M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" },
+  { label: "Frameworks", value: "30+", icon: "M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" },
+  { label: "AI Agents", value: "4", icon: "M12 2a4 4 0 014 4v1a4 4 0 01-8 0V6a4 4 0 014-4zM6 21v-1a6 6 0 0112 0v1" },
 ];
 
 export function HeroOverlay() {
@@ -18,76 +18,87 @@ export function HeroOverlay() {
   return (
     <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
       <main className="flex max-w-2xl flex-col items-center gap-5 text-center">
-        {/* Compact badge — not a huge title */}
+        {/* Badge with glow */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-full border border-[#818cf8]/30 bg-[#818cf8]/10 px-4 py-1 text-sm font-medium text-[#818cf8]"
+          className="glow-border rounded-full bg-[#818cf8]/10 px-5 py-1.5 text-sm font-medium text-[#a5b4fc]"
         >
           AI-Powered Codebase Intelligence
         </motion.div>
 
+        {/* Gradient 3D heading */}
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-4xl font-bold tracking-tight sm:text-5xl"
+          className="text-gradient text-5xl font-extrabold tracking-tight sm:text-6xl"
+          style={{ textShadow: "0 0 40px rgba(99,102,241,0.3)" }}
         >
           Understand Any Codebase
         </motion.h1>
 
-        <motion.p
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="h-7 text-lg text-[var(--muted-foreground)]"
+          className="h-7 text-lg"
         >
           <Typewriter />
-        </motion.p>
+        </motion.div>
 
-        {/* Glassmorphism input card */}
+        {/* Glassmorphism input card with gradient border */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="w-full rounded-2xl border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur-xl"
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
+          className="glass-card glow-border w-full rounded-2xl p-6 pulse-glow"
         >
           <UrlInputForm />
         </motion.div>
 
-        {/* Inline stats strip — dense, not empty */}
+        {/* Stats strip with icons */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="flex items-center gap-6"
+          className="flex items-center gap-5"
         >
           {stats.map((s, i) => (
-            <div key={s.label} className="flex items-center gap-2">
-              {i > 0 && <div className="h-4 w-px bg-white/10" />}
-              <span className="text-sm font-bold">{s.value}</span>
-              <span className="text-xs text-[var(--muted-foreground)]">{s.label}</span>
-            </div>
+            <motion.div
+              key={s.label}
+              className="flex items-center gap-2"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 + i * 0.1 }}
+            >
+              {i > 0 && <div className="h-5 w-px bg-[#818cf8]/20" />}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.5">
+                <path d={s.icon} />
+              </svg>
+              <span className="text-sm font-bold text-white">{s.value}</span>
+              <span className="text-xs text-[#8888aa]">{s.label}</span>
+            </motion.div>
           ))}
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex gap-6 text-sm text-[var(--muted-foreground)]"
+          transition={{ delay: 0.6 }}
+          className="flex gap-6 text-sm"
         >
           {user ? (
             <Link
               href="/dashboard"
-              className="underline underline-offset-4 hover:text-[var(--foreground)] transition-colors"
+              className="text-[#a5b4fc] underline underline-offset-4 transition-colors hover:text-white"
             >
               View Dashboard
             </Link>
           ) : (
             <Link
               href="/login"
-              className="underline underline-offset-4 hover:text-[var(--foreground)] transition-colors"
+              className="text-[#a5b4fc] underline underline-offset-4 transition-colors hover:text-white"
             >
               Sign in to view your projects
             </Link>
